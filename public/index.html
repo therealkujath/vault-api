@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VAULT - Post-Apocalyptic Life Gamification</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #00ff41;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      text-shadow: 0 0 20px #00ff41;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 30px;
+    }
+    
+    .panel {
+      background: rgba(0, 255, 65, 0.05);
+      border: 2px solid #00ff41;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .panel h2 {
+      margin-bottom: 15px;
+      color: #00ff41;
+      text-transform: uppercase;
+      font-size: 1.2rem;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+    }
+    
+    .stat {
+      background: rgba(0, 255, 65, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+    
+    .stat-name {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    
+    .stat-level {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .resources {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .resource {
+      background: rgba(0, 255, 65, 0.1);
+      padding: 10px 15px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .xp-bar {
+      background: rgba(0, 255, 65, 0.2);
+      border-radius: 10px;
+      height: 30px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+    
+    .xp-fill {
+      background: linear-gradient(90deg, #00ff41, #00cc33);
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #000;
+    }
+    
+    .quest-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    input, select, button {
+      font-family: inherit;
+      padding: 12px;
+      border: 2px solid #00ff41;
+      background: rgba(0, 255, 65, 0.1);
+      color: #00ff41;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    
+    button {
+      background: #00ff41;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background: #00cc33;
+      box-shadow: 0 0 20px #00ff41;
+    }
+    
+    .quests-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .quest {
+      background: rgba(0, 255, 65, 0.05);
+      border: 1px solid #00ff41;
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .quest:hover {
+      background: rgba(0, 255, 65, 0.15);
+      transform: translateX(5px);
+    }
+    
+    .quest.completed {
+      opacity: 0.5;
+      border-color: #666;
+    }
+    
+    .quest-info h3 {
+      margin-bottom: 5px;
+    }
+    
+    .quest-meta {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    
+    .difficulty {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    
+    .difficulty.trivial { background: #666; color: #fff; }
+    .difficulty.easy { background: #4a4; color: #fff; }
+    .difficulty.medium { background: #aa4; color: #fff; }
+    .difficulty.hard { background: #a44; color: #fff; }
+    .difficulty.epic { background: #a4a; color: #fff; }
+    
+    .xp-popup {
+      position: fixed;
+      pointer-events: none;
+      animation: floatUp 2s ease-out forwards;
+      font-weight: bold;
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px #00ff41;
+    }
+    
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-100px); }
+    }
+    
+    .reward-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1a1a2e;
+      border: 3px solid #00ff41;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      z-index: 1000;
+      animation: popIn 0.5s ease-out;
+    }
+    
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0); }
+      80% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    
+    .hidden { display: none; }
+    
+    .loading {
+      text-align: center;
+      color: #888;
+      padding: 40px;
+    }
+    
+    .streak {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    
+    .streak-flame {
+      color: #ff6600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 VAULT</h1>
+    <p class="subtitle">Post-Apocalyptic Life Gamification</p>
+    
+    <div class="streak" id="streak-display"></div>
+    
+    <div class="panel">
+      <h2>📊 Character Stats</h2>
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading">Loading...</div>
+      </div>
+      <div class="xp-bar">
+        <div class="xp-fill" id="xp-bar">Level 1</div>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h2>📦 Vault Resources</h2>
+      <div class="resources" id="resources">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h2>⚔️ Create Quest</h2>
+      <form class="quest-form" id="quest-form">
+        <input type="text" id="quest-title" placeholder="Quest title..." required>
+        <select id="quest-difficulty">
+          <option value="trivial">Trivial (&lt;5 min) - 5 XP</option>
+          <option value="easy">Easy (5-15 min) - 25 XP</option>
+          <option value="medium" selected>Medium (15-30 min) - 50 XP</option>
+          <option value="hard">Hard (30-60 min) - 100 XP</option>
+          <option value="epic">Epic (60+ min) - 250 XP</option>
+        </select>
+        <select id="quest-category">
+          <option value="chores">Chores</option>
+          <option value="work">Work</option>
+          <option value="health">Health</option>
+          <option value="social">Social</option>
+          <option value="creative">Creative</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Add Quest</button>
+      </form>
+    </div>
+    
+    <div class="panel">
+      <h2>📝 Active Quests</h2>
+      <div class="quests-list" id="quests-list">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="reward-modal" class="hidden"></div>
+
+  <script>
+    // Config
+    const API_URL = window.location.origin + '/api';
+    
+    // Generate or retrieve player ID
+    let playerId = localStorage.getItem('vault-player-id');
+    if (!playerId) {
+      playerId = 'player-' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('vault-player-id', playerId);
+    }
+    
+    // State
+    let player = null;
+    let quests = [];
+    
+    // Fetch player data
+    async function loadPlayer() {
+      try {
+        const res = await fetch(`${API_URL}/player`, {
+          headers: { 'x-player-id': playerId }
+        });
+        const data = await res.json();
+        if (data.success) {
+          player = data.player;
+          updateUI();
+        }
+      } catch (err) {
+        console.error('Failed to load player:', err);
+      }
+    }
+    
+    // Fetch quests
+    async function loadQuests() {
+      try {
+        const res = await fetch(`${API_URL}/quests?status=active`, {
+          headers: { 'x-player-id': playerId }
+        });
+        const data = await res.json();
+        if (data.success) {
+          quests = data.quests;
+          renderQuests();
+        }
+      } catch (err) {
+        console.error('Failed to load quests:', err);
+      }
+    }
+    
+    // Create quest
+    async function createQuest(e) {
+      e.preventDefault();
+      
+      const title = document.getElementById('quest-title').value;
+      const difficulty = document.getElementById('quest-difficulty').value;
+      const category = document.getElementById('quest-category').value;
+      
+      // Determine stats based on category
+      const statMap = {
+        health: ['VIT'],
+        work: ['FOC'],
+        chores: ['ORG'],
+        social: ['SOC'],
+        creative: ['CRE'],
+        admin: ['ORG']
+      };
+      
+      try {
+        const res = await fetch(`${API_URL}/quests`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-player-id': playerId
+          },
+          body: JSON.stringify({
+            title,
+            difficulty,
+            category,
+            stats: statMap[category] || ['ORG']
+          })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('quest-form').reset();
+          loadQuests();
+          showFloatingText('Quest Added!', e.clientX, e.clientY, '#00ff41');
+        }
+      } catch (err) {
+        console.error('Failed to create quest:', err);
+      }
+    }
+    
+    // Complete quest
+    async function completeQuest(questId, event) {
+      try {
+        const res = await fetch(`${API_URL}/quests/complete`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-player-id': playerId
+          },
+          body: JSON.stringify({ questId })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          showRewardModal(data.result);
+          loadPlayer();
+          loadQuests();
+          
+          // Show XP floating text
+          const rect = event.target.getBoundingClientRect();
+          showFloatingText(`+${data.result.reward.finalXP} XP`, 
+            rect.left + rect.width/2, rect.top, '#00ff41');
+        }
+      } catch (err) {
+        console.error('Failed to complete quest:', err);
+      }
+    }
+    
+    // Show XP floating text
+    function showFloatingText(text, x, y, color) {
+      const el = document.createElement('div');
+      el.className = 'xp-popup';
+      el.textContent = text;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.color = color;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+    
+    // Show reward modal
+    function showRewardModal(result) {
+      const reward = result.reward;
+      const modal = document.getElementById('reward-modal');
+      
+      let resourcesHtml = '';
+      Object.entries(reward.resources).forEach(([res, amount]) => {
+        const icons = { scrap: '🔧', food: '🥫', water: '💧', power: '⚡', meds: '💊', data: '💾' };
+        resourcesHtml += `<span>${icons[res] || '📦'} ${amount} ${res}</span> `;
+      });
+      
+      let lootHtml = '';
+      if (reward.loot.length > 0) {
+        lootHtml = '<h3>🎁 Loot Drops!</h3>' + reward.loot.map(item => 
+          `<div class="loot-item ${item.rarity}">${item.name}</div>`
+        ).join('');
+      }
+      
+      modal.innerHTML = `
+        <div class="reward-popup">
+          <h2>⚔️ QUEST COMPLETE!</h2>
+          <p style="font-size: 2rem; color: #00ff41; margin: 20px 0;">
+            +${reward.finalXP} XP
+          </p>
+          <p>Base: ${reward.baseXP} XP</p>
+          <p>Multipliers: ${Object.entries(reward.multipliers)
+            .filter(([k, v]) => v !== 1)
+            .map(([k, v]) => `${k} x${v.toFixed(1)}`)
+            .join(', ') || 'None'}</p>
+          <div style="margin: 15px 0;">
+            ${resourcesHtml}
+          </div>
+          ${lootHtml}
+          <button onclick="this.closest('.reward-popup').remove(); document.getElementById('reward-modal').classList.add('hidden');" 
+                  style="margin-top: 20px; width: 100%;">
+            AWESOME!
+          </button>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+    
+    // Update UI
+    function updateUI() {
+      if (!player) return;
+      
+      // Stats grid
+      const stats = {
+        VIT: { icon: '❤️', name: 'Vitality', color: '#ff4444' },
+        FOC: { icon: '🧠', name: 'Focus', color: '#4444ff' },
+        CRE: { icon: '🎨', name: 'Creativity', color: '#ff44ff' },
+        SOC: { icon: '👥', name: 'Social', color: '#44ff44' },
+        ORG: { icon: '📋', name: 'Organization', color: '#ffaa00' }
+      };
+      
+      const statsGrid = document.getElementById('stats-grid');
+      statsGrid.innerHTML = Object.entries(player.stats).map(([key, stat]) => `
+        <div class="stat">
+          <div class="stat-icon">${stats[key].icon}</div>
+          <div class="stat-name" style="color: ${stats[key].color}">${stats[key].name}</div>
+          <div class="stat-level" style="color: ${stats[key].color}">Lv.${stat.level}</div>
+          <div style="font-size: 0.7rem; color: #666;">${stat.xp} / ${Math.floor(100 * Math.pow(stat.level, 1.5))} XP</div>
+        </div>
+      `).join('');
+      
+      // XP bar
+      const xpBar = document.getElementById('xp-bar');
+      const progress = (player.progress || 0) * 100;
+      xpBar.style.width = progress + '%';
+      xpBar.textContent = `Level ${player.level} - ${player.currentXP}/${player.xpToNext} XP`;
+      
+      // Resources
+      const resourcesEl = document.getElementById('resources');
+      const icons = { scrap: '🔧', food: '🥫', water: '💧', power: '⚡', meds: '💊', data: '💾' };
+      resourcesEl.innerHTML = Object.entries(player.resources || {}).map(([key, value]) => `
+        <div class="resource">
+          <span>${icons[key] || '📦'}</span>
+          <span>${value} ${key}</span>
+        </div>
+      `).join('');
+      
+      // Streak
+      const streakEl = document.getElementById('streak-display');
+      const streak = player.streak || { current: 0, lives: 3 };
+      streakEl.innerHTML = `
+        <span class="streak-flame">🔥</span> ${streak.current} Day Streak 
+        <span style="color: #666;">(${streak.lives} ❤️ remaining)</span>
+      `;
+    }
+    
+    // Render quests
+    function renderQuests() {
+      const questsEl = document.getElementById('quests-list');
+      
+      if (quests.length === 0) {
+        questsEl.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">No active quests. Create one above!</div>';
+        return;
+      }
+      
+      questsEl.innerHTML = quests.map(quest => `
+        <div class="quest" data-id="${quest.id}">
+          <div class="quest-info">
+            <h3>${quest.title}</h3>
+            <div class="quest-meta">
+              ${quest.category} • ${quest.xpReward} XP
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="difficulty ${quest.difficulty}">${quest.difficulty}</span>
+            <button onclick="completeQuest('${quest.id}', event)">Complete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Event listeners
+    document.getElementById('quest-form').addEventListener('submit', createQuest);
+    
+    // Initial load
+    loadPlayer();
+    loadQuests();
+    
+    // Refresh every 30 seconds
+    setInterval(() => {
+      loadPlayer();
+      loadQuests();
+    }, 30000);
+  </script>
+</body>
+</html>
