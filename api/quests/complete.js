@@ -1,6 +1,6 @@
 // POST /api/quests/complete - Complete a quest and get rewards
 import { getPlayer, savePlayer, getPlayerQuests, savePlayerQuests } from '../../lib/db.js';
-import { calculateQuestReward, updatePlayerStats, getLevelFromXP } from '../../lib/game.js';
+import { calculateQuestReward, updatePlayerStats } from '../../lib/game.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

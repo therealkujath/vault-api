@@ -1,5 +1,6 @@
 // GET/POST /api/player - Player profile and stats
-import { getPlayer, savePlayer, createNewPlayer, getLevelFromXP } from '../lib/game.js';
+import { getPlayer, savePlayer } from '../lib/db.js';
+import { createNewPlayer, getLevelFromXP } from '../lib/game.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {

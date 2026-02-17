@@ -1,5 +1,6 @@
 // GET/POST /api/quests - Quest management
-import { getPlayer, savePlayer, getPlayerQuests, savePlayerQuests, QUEST_DIFFICULTY } from '../lib/game.js';
+import { getPlayer, savePlayer, getPlayerQuests, savePlayerQuests } from '../lib/db.js';
+import { QUEST_DIFFICULTY } from '../lib/game.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {

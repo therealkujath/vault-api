@@ -1,5 +1,6 @@
 // GET/POST /api/vault - Vault building and upgrades
-import { getPlayer, savePlayer, VAULT_ROOMS, canAffordUpgrade, applyUpgrade } from '../lib/game.js';
+import { getPlayer, savePlayer } from '../lib/db.js';
+import { VAULT_ROOMS, canAffordUpgrade, applyUpgrade } from '../lib/game.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
