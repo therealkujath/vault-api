@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod",
-    "start": "node server.js",
-    "railway": "node server.js"
+    "start": "node server-fixed.js",
+    "railway": "node server-fixed.js"
   },
   "dependencies": {
     "uuid": "^9.0.0",
